@@ -22,9 +22,13 @@ Docker deploying Nginx MySQL PHP7 in one key, support full feature functions.
     ```
     $ git clone https://github.com/yeszao/dnmp.git
     ```
+3.use registry-mirrors
+    ```
+	https://zhlnsbrc.mirror.aliyuncs.com 
+    ```
 4. Start docker containers:
     ```
-    $ docker-compose up
+    $ docker-compose up #  --build 当某项安装失败时附上
     ```
     You may need use `sudo` before this command in Linux.
 5. Go to your browser and type `localhost`, you will see:
@@ -49,12 +53,26 @@ We need not change any other files, such as nginx config file or php.ini, everyt
 
 ### HTTPS and HTTP/2
 Default demo include 2 sites:
-* http://www.site1.com (same with http://localhost)
-* https://www.site2.com
+* http://site1.site.com (same with http://localhost)
+* https://site2.site.com
 
 To preview them, add 2 lines to your hosts file (at `/etc/hosts` on Linux and `C:\Windows\System32\drivers\etc\hosts` on Windows):
 ```
-127.0.0.1 www.site1.com
-127.0.0.1 www.site2.com
+127.0.0.1 site1.site.com
+127.0.0.1 site2.site.com
 ```
 Then you can visit from browser.
+
+##常规用法
+```
+docker-compose up -d #托管启动
+docker-compose ps #查看状态
+docker-compose restart #重新启动
+docker rm -f $(docker ps -qa) #移除所有
+docker rm `docker ps -a -q`  #删除非运行的容器 
+docker rmi -f `docker images | grep '<none>' | grep -v -E 'mysql|alpine' | awk '{print $3}'` #删除docker无引用的镜像
+```
+##reload
+```
+docker exec -it dnmp_nginx_1 /usr/local/openresty/nginx/sbin/nginx -s reload
+```

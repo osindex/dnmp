@@ -1,4 +1,4 @@
-FROM php:7.2-fpm
+FROM php:7.1-fpm
 
 COPY ./sources.list.stretch /etc/apt/sources.list
 
@@ -125,5 +125,3 @@ RUN pecl install redis-3.1.5 \
     && apt-get install -y libmemcached-dev zlib1g-dev \
     && pecl install memcached-3.0.4 \
     && docker-php-ext-enable memcached
-
-#CMD ["php","/var/www/html/swoole/swoole.php","start"]

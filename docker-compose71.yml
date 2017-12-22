@@ -2,6 +2,7 @@ version: "3"
 services:
   nginx:
     image: openresty/openresty:alpine
+    hostname: nginx
     restart: always
     ports:
       - "80:80"
@@ -12,14 +13,15 @@ services:
       - ./conf/nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
       - ./conf/nginx/lua:/usr/local/openresty/nginx/lua/:ro
       - ./log/nginx/:/usr/local/openresty/nginx/logs:rw
-    links:
-      - php:php
     depends_on:
-      - php
+      - php71
       - redis
-    # network_mode: "host"
-  php:
-    build: ./php/php72/
+    network_mode: "host"
+
+  php71:
+    hostname: php
+    build: ./php/php71/
+    network_mode: "host"
     restart: always
     expose:
       - "9000"
@@ -28,13 +30,12 @@ services:
       - ./conf/php/php.ini:/usr/local/etc/php/php.ini:ro
       - ./conf/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:rw
       - ./log/php-fpm/:/var/log/php-fpm/:rw
-    command: php /var/www/html/swoole/swoole.php start
-    links:
-      - mysql:mysql
-      - redis:redis
+    # command: php /var/www/html/swoole/swoole.php start
 
   mysql:
     image: mysql:latest
+    hostname: mysql
+    network_mode: "host"
     restart: always
     ports:
       - "3308:3306"
@@ -43,9 +44,11 @@ services:
       - ./mysql/:/var/lib/mysql/:rw
       - ./log/mysql/:/var/log/mysql/:rw
     environment:
-      MYSQL_ROOT_PASSWORD: "qazsew"
+      MYSQL_ROOT_PASSWORD: 'qazsew'
 
   redis:
+    hostname: redis
+    network_mode: "host"
     image: redis:alpine
     restart: always
     ports:
