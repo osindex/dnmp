@@ -8,49 +8,56 @@ services:
       - "800:80"
       - "4430:443"
     volumes:
-      - ./www/:/app/:rw
+      - ./www/:/var/www/html/:rw
       - ./conf/nginx/conf.d:/usr/local/openresty/nginx/conf.d/:ro
       - ./conf/nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
       - ./conf/nginx/lua:/usr/local/openresty/nginx/lua/:ro
       - ./log/nginx/:/usr/local/openresty/nginx/logs:rw
     links:
+      - php:php
       - swoole:swoole
     depends_on:
-      - swoole
+      - php
+    networks:
+      - cust
     # command:
     #   mv reload.sh /bin/reload-nginx.sh
     # network_mode: "host"
   php:
     container_name: php
-    build: ./php/7.1/
+    build: ./php/php71fpm/
     # build: ./php/php72/
     restart: always
     expose:
       - "9000"
     volumes:
-      - ./www/:/app/:rw
-      - ./conf/php/php-fpm.conf:/etc/php7/php-fpm.conf:ro
+      - ./www/:/var/www/html/:rw
+      - ./conf/php/php.ini:/usr/local/etc/php/php.ini:ro
+      - ./conf/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:rw
       - ./log/php-fpm/:/var/log/php-fpm/:rw
     links:
       - mysql:mysql
       - redis:redis
-  #   networks:
-  #     - cust
+    networks:
+      - cust
 
   swoole:
     container_name: swoole
-    build: ./php/7.1cli/
+    build: ./php/php71cli/
     restart: always
     expose:
       - "9501"
     volumes:
-      - ./www/:/app/:rw
-      - ./conf/php/php-fpm.conf:/etc/php7/php-fpm.conf:ro
+      - ./www/:/var/www/html/:rw
+      - ./conf/php/php.ini:/usr/local/etc/php/php.ini:ro
+      - ./conf/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:rw
       - ./log/php-fpm/:/var/log/php-fpm/:rw
     links:
       - mysql:mysql
       - redis:redis
-    command: php /app/swoole/swoole.php start
+    command: php /var/www/html/swoole/swoole.php start
+    networks:
+      - cust
 
   mysql:
     container_name: mysql
@@ -64,6 +71,8 @@ services:
       - ./log/mysql/:/var/log/mysql/:rw
     environment:
       MYSQL_ROOT_PASSWORD: "qazsew"
+    networks:
+      - cust
 
   redis:
     container_name: redis
@@ -71,6 +80,8 @@ services:
     restart: always
     ports:
       - "6380:6379"
+    networks:
+      - cust
   # emq:
   #   container_name: emq
   #   image: emqttd-docker-v2.3.1:latest
@@ -104,4 +115,4 @@ networks:
   cust:
     driver: bridge
   host:
-    driver: "host"
+    driver: host
